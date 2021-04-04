@@ -1,3 +1,7 @@
+module worm() {
+    include <worm_drive.scad>
+}
+
 module tread() {
     difference() {
         hull() {
@@ -91,13 +95,27 @@ module boom_half() {
     }
 }
 module boom() {
-    boom_half();
-    translate([16,0,0.5]) rotate([0,180,0]) boom_half();
+    difference () {
+        union () {
+            boom_half();
+            translate([16,0,0.5]) rotate([0,180,0]) boom_half();
+        }
+        union () {
+            translate([4,-.2,2.75])
+                rotate([0,35,0]) scale(1.3) dipper_stick_hull();
+            translate([13,-.2,5.5])
+                rotate([0,135,0]) scale(1.3) dipper_stick_hull();
+        }
+    }
+    translate([12,-0.6,0.25]) rotate([90,0,4]) linear_extrude(0.25)
+        text("Mary Anne", size = 0.5);
+    translate([8.25,0.7,0.25]) rotate([90,0,0])
+        cylinder(h=1.5, r=0.2, $fn = 20);
 }
 
-module bucket() {
+module bucket_hull() {
     difference() {
-        translate([9,-1.5,-1]) hull() {
+        translate([0,0,0]) hull() {
             translate([0,0,0]) sphere(r = 0.2, $fn = 20);
             translate([0,0,3]) sphere(r = 0.2, $fn = 20);
             translate([0,3,0]) sphere(r = 0.2, $fn = 20);
@@ -107,44 +125,129 @@ module bucket() {
             translate([3,3,0]) sphere(r = 0.2, $fn = 20);
             translate([3.5,3,3.5]) sphere(r = 0.2, $fn = 20);
         }
-        translate([9.3275,-1.125,-.7]) hull() {
+        translate([0.3275,0.375,0.3]) hull() {
             translate([0,0,0]) sphere(r = 0.2, $fn = 20);
             translate([0,0,2.85]) sphere(r = 0.2, $fn = 20);
             translate([0,2.25,0]) sphere(r = 0.2, $fn = 20);
             translate([0,2.25,2.85]) sphere(r = 0.2, $fn = 20);
             translate([2.25,0,0]) sphere(r = 0.2, $fn = 20);
-            translate([2.75,0,3.2]) sphere(r = 0.2, $fn = 20);
+            translate([2.95,0,3.2]) sphere(r = 0.2, $fn = 20);
             translate([2.25,2.25,0]) sphere(r = 0.2, $fn = 20);
-            translate([2.75,2.25,3.2]) sphere(r = 0.2, $fn = 20);
+            translate([2.95,2.25,3.2]) sphere(r = 0.2, $fn = 20);
         }
     }
 }
 
-module dipper_stick() {
-    translate([0.1,0.1,0.1]) hull() {
+module dipper_stick_hull() {
+    hull() {
         translate([0,0,0]) sphere(r = 0.1, $fn = 20);
         translate([0,0,.8]) sphere(r = 0.1, $fn = 20);
         translate([0,0.3,0]) sphere(r = 0.1, $fn = 20);
         translate([0,0.3,.8]) sphere(r = 0.1, $fn = 20);
-        translate([9,0,0]) sphere(r = 0.1, $fn = 20);
-        translate([9,0,.8]) sphere(r = 0.1, $fn = 20);
-        translate([9,0.3,0]) sphere(r = 0.1, $fn = 20);
-        translate([9,0.3,.8]) sphere(r = 0.1, $fn = 20);
+        translate([10,0,0]) sphere(r = 0.1, $fn = 20);
+        translate([10,0,.8]) sphere(r = 0.1, $fn = 20);
+        translate([10,0.3,0]) sphere(r = 0.1, $fn = 20);
+        translate([10,0.3,.8]) sphere(r = 0.1, $fn = 20);
     }
-    difference () {
-        translate([0,0.2,0]) bucket();
-        //translate([8.5,-2.5,-1.8]) cube([5,5,1]);
+}
+
+module dipper_stick() {
+    difference() {
+        dipper_stick_hull();
+        // Cut-out for dipper stick motion
+        translate([0.5,-0.3,0.2]) cube([7,1,0.43]);
     }
+}
+
+
+module bucket_hinge_pins() {
+    translate([-0.62,0.05,0.85]) rotate([90,0,0])
+        cylinder(h=0.5, r=0.17, $fn=20);
+    difference() {
+        union() {
+            // Connect swivel pins to bucket
+            translate([-0.2,0.25,0.85]) rotate([90,0,0])
+                cylinder(h=0.2, r=0.6, $fn=20);
+            translate([-0.2,-0.45,0.85]) rotate([90,0,0])
+                cylinder(h=0.2, r=0.6, $fn=20);
+        }
+        translate([0,-1,0]) cube([3,3,3]);
+    }
+}
+
+module bucket_hinge() {
+    difference() {
+        rotate([90,0,0]) cylinder(h=0.4, r=1.0, $fn = 40);
+        translate([0,0.1,0]) rotate([90,0,0]) cylinder(h=0.6, r=0.7, $fn = 40);
+        rotate([0,-25,0]) translate([-.3,-1,-1]) cube([2,2,2]);
+        translate([-0.62,0.1,0.85]) rotate([90,0,0])
+            cylinder(h=0.6, r=0.2, $fn=20);
+    }
+    // Pin-holders on bucket mouth
+    difference() {
+        translate([-0.62,0,0.85]) rotate([90,0,0])
+            cylinder(h=0.4, r=0.4, $fn=20);
+        translate([-0.62,0.1,0.85]) rotate([90,0,0])
+            cylinder(h=0.6, r=0.2, $fn=20);
+    }
+}
+
+module bucket_mouth() {
+    difference() {
+        bucket_hull();
+        translate([-0.5,-0.5,0.25]) cube([5,5,5]);
+    }
+    translate([0,0.8,0.9]) bucket_hinge();
+    translate([0,2.6,0.9]) bucket_hinge();
+}
+
+
+module bucket_lift() {
+    translate([0,1.5,3]) rotate([0,90,0])
+        rotate_extrude(convexity = 10, $fn = 20)
+            translate([1.5, 0, 0]) circle(r = 0.2);
+}
+
+module bucket() {
+    intersection() {
+        bucket_hull();
+        translate([-0.5,-0.5,0.25]) cube([5,5,5]);
+    }
+    
+    // Lift
+    bucket_lift();
+
     // Teeth
-    translate([12.2,0,2.9]) rotate([0,90,0]) cube([0.5,0.5,0.3]);
-    translate([12.2,1,2.9]) rotate([0,90,0]) cube([0.5,0.5,0.3]);
-    translate([12.2,-1,2.9]) rotate([0,90,0]) cube([0.5,0.5,0.3]);
+    translate([3.35,1.3,3.9]) rotate([0,90,0]) cube([0.5,0.5,0.2]);
+    translate([3.35,2.3,3.9]) rotate([0,90,0]) cube([0.5,0.5,0.2]);
+    translate([3.35,0.3,3.9]) rotate([0,90,0]) cube([0.5,0.5,0.2]);
     // Eyes
-    translate([11,-1.5,2]) rotate([0,90,0]) sphere(r = 0.3, $fn = 20);
-    translate([11,1.95,2]) rotate([0,90,0]) sphere(r = 0.3, $fn = 20);
+    translate([2,-0.2,3]) rotate([0,90,0]) sphere(r = 0.3, $fn = 20);
+    translate([2,3.25,3]) rotate([0,90,0]) sphere(r = 0.3, $fn = 20);
+
+    // Mouth
+    // Open bucket mount slightly for print
+    translate([-0.62, 0, 1.75])
+        rotate([0,20,0]) translate([0.62, 0, -1.75])
+        bucket_mouth();
+    translate([0,0.8,0.9]) bucket_hinge_pins();
+    translate([0,2.6,0.9]) bucket_hinge_pins();
+}
+
+module dipper_stick_and_bucket() {
+    translate([0.1,0.1,0.1]) dipper_stick();
+    translate([10,-1.3,-1]) bucket();
 }
 
 treads();
 translate([0.5,-3,2]) cabin();
 translate([10,0,2.5]) rotate([0,-45,0]) boom();
-translate([11,-.25,8]) dipper_stick();
+translate([11,-.25,8]) dipper_stick_and_bucket();
+
+// Blown Up
+translate([0,-10,0]) boom();
+translate ([0,-15,0]) dipper_stick();
+translate([0,-20,0]) bucket();
+translate([0,-25,0]) bucket_hinge();
+rotate([0,0,0]) translate([0.62,-30,-1.75]) bucket_mouth();
+scale(0.1) worm();
