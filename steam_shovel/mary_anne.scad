@@ -54,8 +54,14 @@ module cabin_roof() {
 }
 
 module cabin() {
+    // Spinny thingy...
     translate([4.5,3.125,-0.9]) cylinder(h = 1, r = 2.25, $fn = 20);
+    // Floor
     cube([9,6,0.5]);
+    // boom attachment
+    translate([9.5,3,0.5]) rotate([0,-45,0]) scale(0.85)
+        boom_attach();
+    // Walls and chute
     difference() {
         cabin_walls();
         union () {
@@ -94,6 +100,7 @@ module boom_half() {
         translate([8,-0.5,0.5]) sphere(r = 0.5, $fn = 20);
     }
 }
+
 module boom() {
     difference () {
         union () {
@@ -101,16 +108,32 @@ module boom() {
             translate([16,0,0.5]) rotate([0,180,0]) boom_half();
         }
         union () {
+            // Two cuts to give range of motion to the dipper stick
             translate([4,-.2,2.75])
                 rotate([0,35,0]) scale(1.3) dipper_stick_hull();
             translate([13,-.2,5.5])
                 rotate([0,135,0]) scale(1.3) dipper_stick_hull();
+            // A cut out of the top to allow top-lift line.
+            translate([16.3,-0.15,-.1]) rotate([0,-60,0]) cube([2,0.3,3]);
+            // Cut out for attachment to body
+            boom_attach();
         }
     }
+    translate([16.1,-0.15,.29]) rotate([-90,0,0])
+        cylinder(h = 0.3, r = 0.24, $fn = 20);
     translate([12,-0.6,0.25]) rotate([90,0,4]) linear_extrude(0.25)
         text("Mary Anne", size = 0.5);
     translate([8.25,0.7,0.25]) rotate([90,0,0])
         cylinder(h=1.5, r=0.2, $fn = 20);
+}
+
+module boom_attach() {
+    hull() {
+        translate([-0.2,-1,0]) rotate([-90,0,0])
+            cylinder(h = 2, r = 0.25, $fn = 20);
+        translate([-1,-1,0]) rotate([-90,0,0])
+            cylinder(h = 2, r = 0.25, $fn = 20);
+    }
 }
 
 module bucket_hull() {
@@ -203,9 +226,13 @@ module bucket_mouth() {
 
 
 module bucket_lift() {
-    translate([0,1.5,3]) rotate([0,90,0])
-        rotate_extrude(convexity = 10, $fn = 20)
-            translate([1.5, 0, 0]) circle(r = 0.2);
+    translate([1,1.5,3]) 
+        difference() {
+            rotate([0,90,0])
+                rotate_extrude(convexity = 10, $fn = 20)
+                    translate([1.5, 0, 0]) circle(r = 0.2);
+            translate([-1,-2,-4]) cube([4,4,4]);
+        }
 }
 
 module bucket() {
@@ -228,7 +255,7 @@ module bucket() {
     // Mouth
     // Open bucket mount slightly for print
     translate([-0.62, 0, 1.75])
-        rotate([0,20,0]) translate([0.62, 0, -1.75])
+        rotate([0,60,0]) translate([0.62, 0, -1.75])
         bucket_mouth();
     translate([0,0.8,0.9]) bucket_hinge_pins();
     translate([0,2.6,0.9]) bucket_hinge_pins();
@@ -239,15 +266,20 @@ module dipper_stick_and_bucket() {
     translate([10,-1.3,-1]) bucket();
 }
 
-treads();
-translate([0.5,-3,2]) cabin();
-translate([10,0,2.5]) rotate([0,-45,0]) boom();
-translate([11,-.25,8]) dipper_stick_and_bucket();
+// Full construction
+module mary_anne() {
+    //translate([0,0,0.3]) treads();
+    //translate([0.5,-3,2]) cabin();
+    translate([10,0,2.5]) rotate([0,-45,0]) boom();
+    translate([11,-.25,8]) dipper_stick_and_bucket();
+}
+
+mary_anne();
 
 // Blown Up
-translate([0,-10,0]) boom();
-translate ([0,-15,0]) dipper_stick();
-translate([0,-20,0]) bucket();
-translate([0,-25,0]) bucket_hinge();
-rotate([0,0,0]) translate([0.62,-30,-1.75]) bucket_mouth();
-scale(0.1) worm();
+//translate([0,-10,0]) boom();
+//translate ([0,-15,0]) dipper_stick();
+//translate([0,-20,0]) bucket();
+//translate([0,-25,0]) bucket_hinge();
+//rotate([0,0,0]) translate([0.62,-30,-1.75]) bucket_mouth();
+//scale(0.1) worm();
