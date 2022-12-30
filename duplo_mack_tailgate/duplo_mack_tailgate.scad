@@ -79,7 +79,10 @@ module ramp_attach() {
     }
 }
 
-main_door();
+difference() {
+    translate([0,0,4.1]) rotate([94.1,0,0]) main_door();
+    translate([-10,-90,-5]) cube([100,100,5]);
+}
 
 // For test
 //#translate([ATTACH_OFFSET_OUTER_WALL,-4.35,-RECESS_HEIGHT]) cube([5,2.25,3]);
